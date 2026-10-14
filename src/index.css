@@ -1,0 +1,111 @@
+@import 'tailwindcss';
+
+/*
+ * יציאה מהלופ system, light edition: the same cream / ink / loop-red tokens as the main site,
+ * with cream as the ground. Red only on buttons and the numbers that matter.
+ */
+@theme {
+  --font-sans: 'Heebo Variable', 'Heebo', system-ui, sans-serif;
+  --font-display: 'Heebo Variable', 'Heebo', system-ui, sans-serif;
+  --font-serif: 'Frank Ruhl Libre Variable', 'Frank Ruhl Libre', 'David', serif;
+
+  --color-cream: #f4efe6;
+  --color-paper: #fbf8f3;
+  --color-ink: #0e0d0c;
+  --color-soot: #171513;
+  --color-stone: #d6d2c8;
+  --color-claret: #e0442f;
+  --color-claret-deep: #a8321f;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+  background: #f4efe6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+  scrollbar-color: #c9c3b6 #f4efe6;
+  scrollbar-width: thin;
+  caret-color: #e0442f;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background: #f4efe6;
+  color: #0e0d0c;
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f4efe6;
+}
+::-webkit-scrollbar-thumb {
+  background: #c9c3b6;
+  border-radius: 999px;
+  border: 2px solid #f4efe6;
+}
+
+::selection {
+  background: #e0442f;
+  color: #fbf8f3;
+}
+
+a,
+button,
+summary,
+label {
+  touch-action: manipulation;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+summary:focus-visible {
+  outline: 2px solid #e0442f;
+  outline-offset: 3px;
+}
+
+section[id] {
+  scroll-margin-top: 72px;
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The ticket's torn edge: two half-circle notches cut where the stub meets the body. */
+.ticket-notch-x {
+  mask:
+    radial-gradient(circle 14px at 0 var(--notch, 50%), #0000 98%, #000) left / 51% 100% no-repeat,
+    radial-gradient(circle 14px at 100% var(--notch, 50%), #0000 98%, #000) right / 51% 100% no-repeat;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

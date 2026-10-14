@@ -1,0 +1,6 @@
+node_modules
+dist
+*.tsbuildinfo
+.impeccable
+.clasp.json
+.DS_Store
