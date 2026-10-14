@@ -241,7 +241,8 @@ function addContact_(d) {
   }));
 
   // The person: a short confirmation, only for the form (the WhatsApp message is its own confirmation).
-  if (d.channel === CHANNEL_LABELS.form && validEmail_(d.email)) {
+  // While the website also sends to the app of יציאה מהלופ, the app sends this email (no duplicates).
+  if (d.channel === CHANNEL_LABELS.form && validEmail_(d.email) && !d.confirm_by_app) {
     try {
       contactConfirmEmail_(d);
     } catch (err) {
