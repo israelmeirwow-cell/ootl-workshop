@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { motion } from 'motion/react'
 import { Container, InstagramLink, Pending, Photo, SectionTitle } from './ui'
-import { RAZ, TEAM_COPY } from '../content'
+import { LEVAV, RAZ, TEAM_COPY } from '../content'
 import { CONFIG } from '../config'
 
 const ease = [0.16, 1, 0.3, 1] as const
@@ -50,6 +50,7 @@ function people(): Person[] {
       inWorkshop: 'פתיחה, בהירות ומכירות',
       photo: p.partner,
       position: '60% 36%',
+      fields: LEVAV.fields,
       lead: true,
     },
     {

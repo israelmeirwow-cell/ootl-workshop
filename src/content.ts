@@ -176,6 +176,11 @@ export const RAZ = {
   instagramName: 'רז בזק | יוצאות מהלופ',
 }
 
+/** Levav's fields (her first card line until 16.10.2026). Her story is CONFIG.team.partnerText. */
+export const LEVAV = {
+  fields: ['יזמות', 'ניהול עסקים', 'שיווק', 'מכירות', 'פסיכולוגיה', 'קופירייטינג', 'אסטרטגיה עסקית'],
+}
+
 export const TEAM_COPY = {
   title: 'מי יהיו איתך בחדר',
   text: 'יציאה מהלופ היא תוכנית ליווי עסקי אישי. בסדנה תפגשו אותנו ואת מי שעושים את זה בפועל: אנשים שבנו קהל, מותג ועסק מאפס, בלי תקציב ובלי קיצורי דרך. בדיוק את מה שתעשו כאן.',
