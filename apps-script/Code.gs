@@ -124,7 +124,8 @@ function doPost(e) {
   var lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
-    var data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
+    if (!allowRequest_()) return json_({ ok: false, error: 'busy' });
+    var data = clean_(JSON.parse(String((e && e.postData && e.postData.contents) || '{}').slice(0, 20000)));
     if (data.type === 'contact') {
       addContact_(data);
       return json_({ ok: true });
@@ -170,7 +171,10 @@ function addLead_(sheet, data) {
 
 function markPaid_(sheet, data) {
   var row = data.id ? findRow_(sheet, data.id) : 0;
-  if (!row) row = appendLead_(sheet, data); // the registration itself never arrived: keep it now
+  // a payment report must belong to a registration from the form; one without it is kept for the
+  // team to check, but nobody gets an entry code by email from it (security audit 15.10)
+  var unknown = !row;
+  if (!row) row = appendLead_(sheet, data);
   else updateRow_(sheet, row, data);
 
   var claimCell = sheet.getRange(row, col_('paidClaimAt'));
@@ -184,7 +188,9 @@ function markPaid_(sheet, data) {
   data.code = code;
 
   var status = [];
-  if (validEmail_(data.email)) {
+  if (unknown) {
+    status.push('הדיווח הגיע בלי הרשמה קודמת: לבדוק בביט ולשלוח את הקוד ידנית');
+  } else if (validEmail_(data.email)) {
     try {
       participantEmail_(data);
       status.push('נשלח למשתתף/ת');
@@ -269,7 +275,7 @@ function addContact_(d) {
     '<p style="margin:12px 0 0"><a href="' + url + '" style="color:#6b655c">לפתוח את הגיליון</a></p></div>';
   var opts = { to: to.join(','), subject: 'פנייה חדשה לשיחת מיפוי: ' + (d.name || '') + (d.channel === CHANNEL_LABELS.whatsapp ? ' (ווטסאפ)' : ''), body: text, htmlBody: html, name: 'יציאה מהלופ · האתר' };
   if (validEmail_(d.email)) opts.replyTo = String(d.email).trim();
-  MailApp.sendEmail(opts);
+  sendMail_(opts);
 }
 
 function contactConfirmEmail_(d) {
@@ -282,7 +288,7 @@ function contactConfirmEmail_(d) {
     '<p style="margin:12px 0 0">קיבלנו את הפרטים שלך לשיחת מיפוי. נחזור אליך בימים הקרובים לתאם 20 דקות, בלי התחייבות.</p>' +
     (lines.length ? table_(lines) : '') +
     '<p style="margin:20px 0 0;color:#6b655c">יציאה מהלופ</p></div>';
-  MailApp.sendEmail({ to: String(d.email).trim(), subject: 'קיבלנו! נחזור אליך לתיאום שיחת מיפוי', body: text, htmlBody: html, name: 'יציאה מהלופ' });
+  sendMail_({ to: String(d.email).trim(), subject: 'קיבלנו! נחזור אליך לתיאום שיחת מיפוי', body: text, htmlBody: html, name: 'יציאה מהלופ' });
 }
 
 // ===== emails =====
@@ -320,7 +326,7 @@ function participantEmail_(d) {
   var opts = { to: String(d.email).trim(), subject: subject, body: text, htmlBody: html, name: 'יציאה מהלופ' };
   var reply = teamAddresses_()[0];
   if (reply) opts.replyTo = reply;
-  MailApp.sendEmail(opts);
+  sendMail_(opts);
 }
 
 function teamEmail_(subject, lines, s, note) {
@@ -343,7 +349,7 @@ function teamEmail_(subject, lines, s, note) {
     '<div style="margin:16px 0;padding:12px 14px;background:#f4efe6;border-radius:10px">' + table_(totals) + '</div>' +
     (note ? '<p style="margin:0 0 12px;font-weight:bold">' + esc_(note) + '</p>' : '') +
     '<p><a href="' + url + '" style="color:#a8321f;font-weight:bold">לפתוח את הגיליון</a></p></div>';
-  MailApp.sendEmail({ to: to.join(','), subject: subject, body: text, htmlBody: html, name: 'סדנת יציאה מהלופ' });
+  sendMail_({ to: to.join(','), subject: subject, body: text, htmlBody: html, name: 'סדנת יציאה מהלופ' });
 }
 
 function personLines_(d) {
@@ -583,4 +589,51 @@ function day_(v) {
 
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj)).setMimeType(ContentService.MimeType.JSON);
+}
+
+
+// ===== protection (security audit 15.10) =====
+/** At most this many emails a day from the script (Gmail's own cap is 100). */
+var MAX_MAILS_PER_DAY = 60;
+/** At most this many emails a day to the same address. */
+var MAX_MAILS_PER_ADDRESS = 3;
+/** At most this many requests from the websites per 10 minutes, all visitors together. */
+var MAX_POSTS_PER_10_MIN = 60;
+
+function allowRequest_() {
+  var cache = CacheService.getScriptCache();
+  var key = 'posts_' + Math.floor(Date.now() / 600000);
+  var n = Number(cache.get(key) || 0) + 1;
+  cache.put(key, String(n), 900);
+  return n <= MAX_POSTS_PER_10_MIN;
+}
+
+/** Only short text values, never more than 80 fields, so junk cannot flood the sheet. */
+function clean_(data) {
+  var out = {};
+  if (!data || typeof data !== 'object') return out;
+  Object.keys(data).slice(0, 80).forEach(function (k) {
+    var v = data[k];
+    if (v === null || v === undefined) return;
+    if (typeof v === 'boolean' || typeof v === 'number') { out[k] = v; return; }
+    out[String(k).slice(0, 40)] = String(v).slice(0, 600);
+  });
+  return out;
+}
+
+/** MailApp.sendEmail with a daily ceiling and a per-address ceiling. Over the limit it throws (the caller logs it). */
+function sendMail_(opts) {
+  var props = PropertiesService.getScriptProperties();
+  var day = Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd');
+  var key = 'mails_' + day;
+  var sent = Number(props.getProperty(key) || 0);
+  if (sent >= MAX_MAILS_PER_DAY) throw new Error('daily email limit reached');
+  var cache = CacheService.getScriptCache();
+  var to = String(opts.to || '').toLowerCase();
+  var toKey = 'to_' + day + '_' + Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, to));
+  var toSent = Number(cache.get(toKey) || 0);
+  if (to.indexOf(',') < 0 && toSent >= MAX_MAILS_PER_ADDRESS) throw new Error('too many emails to this address today');
+  MailApp.sendEmail(opts);
+  props.setProperty(key, String(sent + 1));
+  cache.put(toKey, String(toSent + 1), 21600);
 }
