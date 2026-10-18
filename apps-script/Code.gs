@@ -598,7 +598,7 @@ var MAX_MAILS_PER_DAY = 60;
 /** At most this many emails a day to the same address. */
 var MAX_MAILS_PER_ADDRESS = 3;
 /** At most this many requests from the websites per 10 minutes, all visitors together. */
-var MAX_POSTS_PER_10_MIN = 60;
+var MAX_POSTS_PER_10_MIN = 300;
 
 function allowRequest_() {
   var cache = CacheService.getScriptCache();
