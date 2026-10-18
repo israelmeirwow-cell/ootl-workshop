@@ -83,6 +83,7 @@ export function Footer() {
         <div className="flex flex-col items-start gap-1 lg:flex-row lg:items-center lg:gap-8">
           <InstagramLink href={CONFIG.team.razInstagram} name={RAZ.instagramName} />
           <p className="text-[15px] text-ink/60">סדנה מעשית · {CONFIG.event.city}</p>
+          <a href="https://israelmeirwow-cell.github.io/yetzia-mehaloop/privacy.html" className="text-[15px] text-ink/60 underline underline-offset-4 hover:text-ink">מדיניות פרטיות</a>
         </div>
       </div>
     </footer>
