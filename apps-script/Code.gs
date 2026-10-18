@@ -15,12 +15,12 @@
  *  2. Pick "setup" at the top → Run → allow the permissions. (Optional: run "testEmail" to see both emails.)
  *  3. Deploy → New deployment → Web app → Execute as: Me, Who has access: Anyone → Deploy → copy the /exec URL.
  *  4. Put that URL in the page's src/config.ts in BOTH leadsEndpoint and seats.remoteUrl, and build again.
- * The emails go out from the Google account that deployed the script, and that account always gets the team email.
+ * The emails go out from the Google account that deployed the script. The team emails go only to NOTIFY_EMAILS.
  */
 
 // ===== settings =====
-/** The team's addresses for the payment summary. The account that deploys the script is added automatically. */
-var NOTIFY_EMAILS = []; // e.g. ['raz@gmail.com', 'levavmalkabrt12@gmail.com']
+/** The team's addresses for the team emails. Only these get them (the account that deploys the script is NOT added). */
+var NOTIFY_EMAILS = ['yetziamehaloop@gmail.com'];
 /** Also email the team when someone only fills the form (before paying). */
 var NOTIFY_ON_REGISTER = false;
 /** Shown in the participant's email when filled in. */
@@ -250,6 +250,8 @@ function addContact_(d) {
     }
   }
 
+  // While the website also sends to the app, the app emails the business inbox itself.
+  if (d.confirm_by_app) return;
   var to = teamAddresses_();
   if (!to.length) return;
   var lines = [['שם', d.name], ['טלפון', d.phone], ['מייל', d.email], ['איך פנה/תה', d.channel], ['איפה זה עומד', d.stage], ['המטרה', d.goal], ['הרעיון', d.idea]].filter(function (l) { return l[1]; });
@@ -537,10 +539,6 @@ function newCode_(sheet) {
 
 function teamAddresses_() {
   var list = NOTIFY_EMAILS.slice();
-  try {
-    var me = Session.getEffectiveUser().getEmail();
-    if (me) list.unshift(me);
-  } catch (err) { /* not available in every context */ }
   var seen = {};
   return list.filter(function (a) {
     var k = String(a).trim().toLowerCase();

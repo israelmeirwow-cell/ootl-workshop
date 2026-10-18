@@ -23,7 +23,7 @@ export const CONFIG = {
      * Optional: the Google Apps Script web app URL (apps-script/Code.gs). When set,
      * the page reads the live "sold" number from the sheet instead of the number above.
      */
-    remoteUrl: 'https://script.google.com/macros/s/AKfycbyjMaRoidcgZq-V-BtKyFh3Mh6S0LS2wc5E-f_dElTyQ0iGZbSzq7NYMGhiHUMl3bkkRw/exec',
+    remoteUrl: 'https://script.google.com/macros/s/AKfycbxdUrMXxvamGcAAP3ncZww1lQnboIEbik7cRbtYSRczjZmS_fQERG3rfi6jiI1ce74ksg/exec',
   },
 
   /** Price ladder from the brief. Seats per tier add up to 25. */
@@ -54,7 +54,7 @@ export const CONFIG = {
    * "סיימתי לשלם" emails the participant their entry code and emails Raz the full summary with the code.
    * Put the same URL in seats.remoteUrl. (Every submission is also kept in Netlify Forms as a backup.)
    */
-  leadsEndpoint: 'https://script.google.com/macros/s/AKfycbyjMaRoidcgZq-V-BtKyFh3Mh6S0LS2wc5E-f_dElTyQ0iGZbSzq7NYMGhiHUMl3bkkRw/exec',
+  leadsEndpoint: 'https://script.google.com/macros/s/AKfycbxdUrMXxvamGcAAP3ncZww1lQnboIEbik7cRbtYSRczjZmS_fQERG3rfi6jiI1ce74ksg/exec',
 
   /** Invite link of the participants' WhatsApp group (thank-you screen). */
   whatsappGroupUrl: '',
